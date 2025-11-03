@@ -10,14 +10,12 @@ public class AuthDbContext: DbContext
 {
     public AuthDbContext(
         DbContextOptions<AuthDbContext> options
-    ): base(options) {
+    ): base(options) {}
+    
 
-
-        public DbSet<User> Users { get; set; }
-        public DbSet<Customer> Customers { get; set; }
-        public DbSet<RefreshToken> RefreshTokens { get; set; }
-
-    }
+    public DbSet<User> Users { get; set; }
+    public DbSet<Customer> Customers { get; set; }
+    public DbSet<RefreshToken> RefreshTokens { get; set; }
 
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
