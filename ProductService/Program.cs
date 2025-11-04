@@ -6,7 +6,7 @@ using ProductService.Data;
 using ProductService.Services;
 
 
-var buider = WebApplication.CreateBuilder(args);
+var builder = WebApplication.CreateBuilder(args);
 
 
 buider.Services.AddControllers();
@@ -62,7 +62,7 @@ builder.Services.AddCors(options => {
     options.AddPolicy("AllowAll", policy => {
         policy.AllowAnyOrigin()
         .AllowAnyMethod()
-        .AllowAnyHeader()
+        .AllowAnyHeader();
     });
 });
 
