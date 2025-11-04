@@ -39,6 +39,26 @@ services:
       - app-network
 
 
+  api-gateway:
+    build:
+      context: ./ApiGateway
+      dockerfile: Dockerfile
+    container_name: api-gateway
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=http://+:80
+    env_file:
+      - ./ApiGateway/.env
+    ports:
+      - "8080:80"
+    depends_on:
+      - auth-service
+      - product-service
+      - order-service
+    networks:
+      - app-network
+
+
 volumes:
   mysql_data:
 
