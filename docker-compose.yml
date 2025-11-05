@@ -93,8 +93,8 @@ services:
       - "8080:80"
     depends_on:
       - auth-service
-      # - product-service
-      # - order-service
+      - product-service
+      - order-service
     networks:
       - app-network
 
