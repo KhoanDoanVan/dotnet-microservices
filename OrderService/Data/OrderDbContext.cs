@@ -4,8 +4,8 @@ using OrderService.Models;
 
 namespace OrderService.Data;
 
-
-public class OrderDbContext: DbContext
+// Remain connection, track in RAM, concurrently implement CRUD database via DbSet<T> correspond tables
+public class OrderDbContext: DbContext // Like Gateway about code and database
 {
 
     public OrderDbContext(DbContextOptions<OrderDbContext> options) : base(options) { }
@@ -16,6 +16,7 @@ public class OrderDbContext: DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        // Mapping class and table
         base.OnModelCreating(modelBuilder);
 
         modelBuilder.Entity<Order>(entity =>

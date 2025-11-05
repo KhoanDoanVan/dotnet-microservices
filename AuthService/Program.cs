@@ -4,7 +4,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using AuthService.Data;
 using AuthService.Services;
-using AuthService.Middleware;
+// using AuthService.Middleware;
 
 
 
@@ -12,8 +12,8 @@ var builder = WebApplication.CreateBuilder(args);
 
 
 // Add Services
-builder.Services.AddControlles();
-builder.Services.AddEnpointsApiExplorer();
+builder.Services.AddControllers();
+builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 
@@ -46,7 +46,7 @@ builder.Services.AddAuthentication(options => {
         ValidateAudience = true,
         ValidIssuer = jwtSettings["Issuer"],
         ValidAudience = jwtSettings["Audience"],
-        ClockSkew = Timespan.Zero
+        ClockSkew = TimeSpan.Zero
     };
 });
 
@@ -65,7 +65,7 @@ builder.Services.AddCors(options => {
     options.AddPolicy("AllowAll", policy => {
         policy.AllowAnyOrigin();
         policy.AllowAnyMethod();
-        policy.AllowAnyHeader():
+        policy.AllowAnyHeader();
     });
 });
 
@@ -83,7 +83,7 @@ using (var scope = app.Services.CreateScope()) {
 
 if (app.Environment.IsDevelopment()) {
     app.UseSwagger();
-    app.UseSwaggerUI():
+    app.UseSwaggerUI();
 }
 
 

@@ -1,0 +1,12 @@
+
+
+bin/
+obj/
+*.user
+*.suo
+*.cache
+*.dbmdl
+*.nuget.*
+project.lock.json
+
+*.env

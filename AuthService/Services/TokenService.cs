@@ -50,7 +50,7 @@ public class TokenService: ITokenService
         var credentials = new SigningCredentials(
             key,
             SecurityAlgorithms.HmacSha256
-        )
+        );
 
         var expirationMinutes = int.Parse(
             jwtSettings["AccessTokenExpirationMinutes"] ?? "60"

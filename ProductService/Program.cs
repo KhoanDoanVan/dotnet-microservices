@@ -4,14 +4,17 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using ProductService.Data;
 using ProductService.Services;
+using Microsoft.Extensions.Options;
+
 
 
 var builder = WebApplication.CreateBuilder(args);
 
 
-buider.Services.AddControllers();
-buider.Services.AddEndpointsApiExplorer();
-buider.Services.AddSwaggerGen();
+
+builder.Services.AddControllers();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
 
 
 
@@ -20,7 +23,7 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 
 
 builder.Services.AddDbContext<ProductDbContext>(options => {
-    options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString))
+    options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString));
 });
 
 

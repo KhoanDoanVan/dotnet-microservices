@@ -98,6 +98,11 @@ public class ProductsController: ControllerBase
             );
         }
 
-        return NoContent();
+        return Ok(
+            new
+            {
+                message = "Delete Successfully"
+            }
+        );
     }
 }

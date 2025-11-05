@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 
+
 var builder = WebApplication.CreateBuilder(args);
 
 
@@ -36,11 +37,17 @@ builder.Services.AddAuthorization();
 
 
 // Add YARP
+builder.Services.AddReverseProxy().LoadFromConfig(
+    builder.Configuration.GetSection("ReverseProxy")
+);
+
+
+// CORS
 builder.Services.AddCors(options => {
     options.AddPolicy("AllowAll", policy => {
         policy.AllowAnyOrigin()
         .AllowAnyMethod()
-        .AllowAnyHeader()
+        .AllowAnyHeader();
     });
 });
 
@@ -57,4 +64,4 @@ app.UseAuthorization();
 app.MapReverseProxy();
 
 
-app.Run():
+app.Run();

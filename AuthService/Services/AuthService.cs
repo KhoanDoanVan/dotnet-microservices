@@ -76,7 +76,7 @@ public class AuthService: IAuthService
     {
         var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == request.Username);
 
-        if (user == null || !BCrypt.Net.BCrypt.Verify(request.Password, user.password))
+        if (user == null || !BCrypt.Net.BCrypt.Verify(request.Password, user.Password))
         {
             return null;
         }
@@ -129,7 +129,7 @@ public class AuthService: IAuthService
 
     public async Task<UserDto?> GetUserByIdAsync(int userId)
     {
-        var users = await _context.Users.FindAsync(userId);
+        var user = await _context.Users.FindAsync(userId);
         return user != null ? MapToUserDto(user) : null;
     }
 
