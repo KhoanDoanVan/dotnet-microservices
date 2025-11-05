@@ -11,10 +11,21 @@ public class ProductDbContext: DbContext
     public ProductDbContext(DbContextOptions<ProductDbContext> options) : base(options) { }
     
     public DbSet<Product> Products { get; set; }
+    public DbSet<Category> Categories { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
+
+
+        modelBuilder.Entity<Category>(entity =>
+        {
+            entity.ToTable("categories");
+            entity.HasKey(e => e.CategoryId);
+            entity.Property(e => e.CategoryId).HasColumnName("category_id");
+            entity.Property(e => e.CategoryName).HasColumnName("category_name").HasMaxLength(100).IsRequired();
+        });
+
 
         modelBuilder.Entity<Product>(entity =>
         {
