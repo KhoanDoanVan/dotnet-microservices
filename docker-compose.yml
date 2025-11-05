@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   mysql:
-    image: mysql:8:0
+    image: mysql:8.0
     container_name: mysql
     environment:
       MYSQL_ROOT_PASSWORD: simon123
@@ -11,7 +11,7 @@ services:
       - "3306:3306"
     volumes:
       - mysql_data:/var/lib/mysql
-      - ./init-db.sql/docker-entrypoint-initdb.d/init-db/sql
+      - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
     networks:
       - app-network
     healthcheck:
@@ -39,6 +39,46 @@ services:
       - app-network
 
 
+  product-service:
+    build:
+      context: ./ProductService
+      dockerfile: Dockerfile
+    container_name: product-service
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=http://+:80
+    env_file:
+      - ./ProductService/.env
+    ports:
+      - "5002:80"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - app-network
+
+
+  
+  order-service:
+    build:
+      context: ./OrderService
+      dockerfile: Dockerfile
+    container_name: order-service
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=http://+80
+    env_file:
+      - ./OrderService/.env
+    ports:
+      - "5003:80"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - app-network
+
+
+
   api-gateway:
     build:
       context: ./ApiGateway
@@ -53,8 +93,8 @@ services:
       - "8080:80"
     depends_on:
       - auth-service
-      - product-service
-      - order-service
+      # - product-service
+      # - order-service
     networks:
       - app-network
 
