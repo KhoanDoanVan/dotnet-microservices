@@ -38,7 +38,7 @@ public class UpdateProductRequest
 // Extent DTOs
 public class ProductWithInventoryDto : ProductDto
 {
-    public int stockQuantity { get; set; }
+    public int StockQuantity { get; set; }
 }
 
 
