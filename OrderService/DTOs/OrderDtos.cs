@@ -13,6 +13,7 @@ public class OrderDto
     public decimal TotalAmount { get; set; }
     public decimal DiscountAmount { get; set; }
     public List<OrderItemDto> OrderItems { get; set; } = new();
+    public List<PaymentDto> Payments { get; set; } = new();
 }
 
 

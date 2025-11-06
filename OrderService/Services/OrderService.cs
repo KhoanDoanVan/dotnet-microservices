@@ -148,6 +148,14 @@ public class OrderService: IOrderService
                 Quantity = oi.Quantity,
                 UnitPrice = oi.UnitPrice,
                 TotalPrice = oi.TotalPrice
+            }).ToList(),
+            Payments = order.Payments.Select(p => new PaymentDto
+            {
+                PaymentId = p.PaymentId,
+                OrderId = p.OrderId,
+                Amount = p.Amount,
+                PaymentMethod = p.PaymentMethod.ToString().ToLower(),
+                PaymentDate = p.PaymentDate
             }).ToList()
         };
     }
