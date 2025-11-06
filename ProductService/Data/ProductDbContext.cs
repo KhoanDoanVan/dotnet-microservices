@@ -13,6 +13,7 @@ public class ProductDbContext: DbContext
     public DbSet<Product> Products { get; set; }
     public DbSet<Category> Categories { get; set; }
     public DbSet<Supplier> Suppliers { get; set; }
+    public DbSet<Inventory> Inventories { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -54,6 +55,19 @@ public class ProductDbContext: DbContext
             entity.Property(e => e.CreatedAt).HasColumnName("created_at");
 
             entity.HasIndex(e => e.Barcode).IsUnique();
+        });
+
+
+        modelBuilder.Entity<Inventory>(entity =>
+        {
+            entity.ToTable("inventory");
+            entity.HasKey(e => e.InventoryId);
+            entity.Property(e => e.InventoryId).HasColumnName("inventory_id");
+            entity.Property(e => e.ProductId).HasColumnName("product_id");
+            entity.Property(e => e.Quantity).HasColumnName("quantity");
+            entity.Property(e => e.UpdatedAt).HasColumnName("updated_at");
+
+            entity.HasIndex(e => e.ProductId).IsUnique();
         });
     }
 }

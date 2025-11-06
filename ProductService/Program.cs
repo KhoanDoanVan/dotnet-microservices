@@ -60,6 +60,7 @@ builder.Services.AddAuthorization();
 builder.Services.AddScoped<IProductService, ProductService.Services.ProductService>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<ISupplierService, SupplierService>();
+builder.Services.AddScoped<IInventoryService, InventoryService>();
 
 
 // CORS
