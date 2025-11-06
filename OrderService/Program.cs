@@ -64,6 +64,8 @@ builder.Services.AddHttpClient("ProductService", client =>
 
 // Custom Services
 builder.Services.AddScoped<IOrderService, OrderService.Services.OrderService>();
+builder.Services.AddScoped<IPaymentService, PaymentService>();
+builder.Services.AddScoped<IPromotionService, PromotionService>();
 
 
 // CORS
