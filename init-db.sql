@@ -22,6 +22,9 @@ CREATE TABLE IF NOT EXISTS customers (
     email VARCHAR(100),
     address TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    total_spent DECIMAL(10, 2) DEFAULT 0,
+    order_count INT DEFAULT 0,
+    tier ENUM('bronze', 'silver', 'gold', 'platinum') DEFAULT 'bronze'
 );
 
 CREATE TABLE IF NOT EXISTS refresh_token (
@@ -59,7 +62,7 @@ CREATE TABLE IF NOT EXISTS products (
     barcode VARCHAR(50) UNIQUE,
     price DECIMAL(10, 2) NOT NULL,
     unit VARCHAR(20) DEFAULT 'pcs',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (category_id) REFERENCES categories(category_id) ON DELETE SET NULL,
     FOREIGN KEY (supplier_id) REFERENCES suppliers(supplier_id) ON DELETE SET NULL
 );
