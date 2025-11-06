@@ -33,3 +33,19 @@ public class UpdateProductRequest
     public decimal Price { get; set; }
     public string Unit { get; set; } = "pcs";
 }
+
+
+// Extent DTOs
+public class ProductWithInventoryDto : ProductDto
+{
+    public int stockQuantity { get; set; }
+}
+
+
+public class ProductStatsDto
+{
+    public int TotalProducts { get; set; }
+    public decimal TotalInventoryValue { get; set; }
+    public int LowStockProducts { get; set; }
+    public int OutOfStockProducts { get; set; }
+}
