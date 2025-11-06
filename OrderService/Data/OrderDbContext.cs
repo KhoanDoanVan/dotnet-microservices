@@ -12,6 +12,7 @@ public class OrderDbContext: DbContext // Like Gateway about code and database
 
     public DbSet<Order> Orders { get; set; }
     public DbSet<OrderItem> OrderItems { get; set; }
+    public DbSet<Payment> Payments { get; set; }
 
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -32,9 +33,17 @@ public class OrderDbContext: DbContext // Like Gateway about code and database
             entity.Property(e => e.TotalAmount).HasColumnName("total_amount").HasColumnType("decimal(10,2)");
             entity.Property(e => e.DiscountAmount).HasColumnName("discount_amount").HasColumnType("decimal(10,2)");
 
+            // Order Item
             entity.HasMany(e => e.OrderItems)
             .WithOne()
             .HasForeignKey(oi => oi.OrderId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+
+            // Payment
+            entity.HasMany(e => e.Payments)
+            .WithOne()
+            .HasForeignKey(p => p.OrderId)
             .OnDelete(DeleteBehavior.Cascade);
         });
 
@@ -49,6 +58,25 @@ public class OrderDbContext: DbContext // Like Gateway about code and database
             entity.Property(e => e.Quantity).HasColumnName("quantity");
             entity.Property(e => e.UnitPrice).HasColumnName("unit_price").HasColumnType("decimal(10,2)");
             entity.Property(e => e.TotalPrice).HasColumnName("total_price").HasColumnType("decimal(10,2)");
+        });
+
+
+
+        modelBuilder.Entity<Payment>(entity =>
+        {
+            entity.ToTable("payments");
+            entity.HasKey(e => e.PaymentId);
+            entity.Property(e => e.PaymentId).HasColumnName("payment_id");
+            entity.Property(e => e.OrderId).HasColumnName("order_id");
+            entity.Property(e => e.Amount).HasColumnName("amount").HasColumnType("decimal(10,2)");
+            entity.Property(e => e.PaymentMethod)
+            .HasColumnName("payment_method")
+            .HasConversion(
+                v => v.ToString().ToLower().Replace("ewallet", "e_wallet"),
+                v => Enum.Parse<PaymentMethod>(v.Replace("e_wallet", "ewallet"), true)
+            )
+            .HasMaxLength(20);
+            entity.Property(e => e.PaymentDate).HasColumnName("payment_date");
         });
 
     }

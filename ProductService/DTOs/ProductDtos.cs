@@ -13,7 +13,6 @@ public class ProductDto
     public DateTime CreatedAt { get; set; }
 }
 
-
 public class CreateProductRequest
 {
     public int? CategoryId { get; set; }
