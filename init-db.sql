@@ -60,7 +60,8 @@ CREATE TABLE IF NOT EXISTS products (
     price DECIMAL(10, 2) NOT NULL,
     unit VARCHAR(20) DEFAULT 'pcs',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    FOREIGN KEY (category_id) REFERENCES categories(category_id) ON DELETE SET NULL
+    FOREIGN KEY (category_id) REFERENCES categories(category_id) ON DELETE SET NULL,
+    FOREIGN KEY (supplier_id) REFERENCES suppliers(supplier_id) ON DELETE SET NULL
 );
 
 CREATE TABLE IF NOT EXISTS inventory (
@@ -97,7 +98,8 @@ CREATE TABLE IF NOT EXISTS orders (
     order_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     status ENUM('pending', 'paid', 'canceled') DEFAULT 'pending',
     total_amount DECIMAL(10, 2),
-    discount_amount DECIMAL(10, 2) DEFAULT 0
+    discount_amount DECIMAL(10, 2) DEFAULT 0,
+    FOREIGN KEY (promo_id) REFERENCES promotions(promo_id) ON DELETE SET NULL
 );
 
 
@@ -108,5 +110,15 @@ CREATE TABLE order_items (
     quantity INT NOT NULL,
     unit_price DECIMAL(10,2) NOT NULL,
     total_price DECIMAL(10,2) NOT NULL,
+    FOREIGN KEY (order_id) REFERENCES orders(order_id) ON DELETE CASCADE
+);
+
+
+CREATE TABLE IF NOT EXISTS payments (
+    payment_id INT AUTO_INCREMENT PRIMARY KEY,
+    order_id INT NOT NULL,
+    amount DECIMAL(10,2) NOT NULL,
+    payment_method ENUM('cash','card','bank_transfer','e_wallet') DEFAULT 'cash',
+    payment_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (order_id) REFERENCES orders(order_id) ON DELETE CASCADE
 );

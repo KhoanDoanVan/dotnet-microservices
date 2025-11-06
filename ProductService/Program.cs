@@ -56,9 +56,10 @@ builder.Services.AddAuthentication(options => {
 
 builder.Services.AddAuthorization();
 
-// Custom Services
+// Dependency Injection - Tạo một lần cho mỗi HTTP request o Controllers
 builder.Services.AddScoped<IProductService, ProductService.Services.ProductService>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
+builder.Services.AddScoped<ISupplierService, SupplierService>();
 
 
 // CORS

@@ -12,10 +12,23 @@ public class ProductDbContext: DbContext
     
     public DbSet<Product> Products { get; set; }
     public DbSet<Category> Categories { get; set; }
+    public DbSet<Supplier> Suppliers { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
+
+
+        modelBuilder.Entity<Supplier>(entity =>
+        {
+            entity.ToTable("suppliers");
+            entity.HasKey(e => e.SupplierId);
+            entity.Property(e => e.SupplierId).HasColumnName("supplier_id");
+            entity.Property(e => e.Name).HasColumnName("name").HasMaxLength(100).IsRequired();
+            entity.Property(e => e.Phone).HasColumnName("phone").HasMaxLength(20);
+            entity.Property(e => e.Email).HasColumnName("email").HasMaxLength(100);
+            entity.Property(e => e.Address).HasColumnName("address").HasColumnType("text");
+        });
 
 
         modelBuilder.Entity<Category>(entity =>
