@@ -38,6 +38,14 @@ CREATE TABLE IF NOT EXISTS refresh_token (
 -- PRODUCT DATABASE
 USE product_db;
 
+CREATE TABLE IF NOT EXISTS suppliers (
+    supplier_id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    phone VARCHAR(20),
+    email VARCHAR(100),
+    address TEXT
+);
+
 CREATE TABLE IF NOT EXISTS categories (
     category_id INT AUTO_INCREMENT PRIMARY KEY,
     category_name VARCHAR(100) NOT NULL
@@ -55,11 +63,31 @@ CREATE TABLE IF NOT EXISTS products (
     FOREIGN KEY (category_id) REFERENCES categories(category_id) ON DELETE SET NULL
 );
 
-
+CREATE TABLE IF NOT EXISTS inventory (
+    inventory_id INT AUTO_INCREMENT PRIMARY KEY,
+    product_id INT NOT NULL,
+    quantity INT DEFAULT 0,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIME ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (product_id) REFERENCES products(product_id) ON DELETE CASCADE,
+    UNIQUE KEY unique_product_inventory (product_id)
+);
 
 -- ORDER DATABASE
 USE order_db;
 
+CREATE TABLE IF NOT EXISTS promotions (
+    promo_id INT AUTO_INCREMENT PRIMARY KEY,
+    promo_code VARCHAR(50) UNIQUE NOT NULL,
+    description VARCHAR(255),
+    discount_type ENUM('percent','fixed') NOT NULL,
+    discount_value DECIMAL(10,2) NOT NULL,
+    start_date DATE NOT NULL,
+    end_date DATE NOT NULL,
+    min_order_amount DECIMAL(10,2) DEFAULT 0,
+    usage_limit INT DEFAULT 0,
+    used_count INT DEFAULT 0,
+    status ENUM('active','inactive') DEFAULT 'active'
+);
 
 CREATE TABLE IF NOT EXISTS orders (
     order_id INT AUTO_INCREMENT PRIMARY KEY,
