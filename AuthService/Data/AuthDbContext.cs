@@ -45,6 +45,10 @@ public class AuthDbContext: DbContext
             entity.Property(e => e.Email).HasColumnName("email").HasMaxLength(100);
             entity.Property(e => e.Address).HasColumnName("address").HasColumnType("text");
             entity.Property(e => e.CreatedAt).HasColumnName("created_at");
+
+            entity.Property(e => e.TotalSpent).HasColumnName("total_spent").HasColumnType("decimal(10,2)");
+            entity.Property(e => e.OrderCount).HasColumnName("order_count");
+            entity.Property(e => e.Tier).HasColumnName("tier").HasConversion<string>().HasMaxLength(20);
         });
 
         modelBuilder.Entity<RefreshToken>(entity => {

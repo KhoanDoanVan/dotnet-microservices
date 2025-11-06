@@ -58,6 +58,7 @@ builder.Services.AddAuthorization();
 // Custom Services
 builder.Services.AddScoped<IAuthService, AuthService.Services.AuthService>();
 builder.Services.AddScoped<ITokenService, TokenService>();
+builder.Services.AddScoped<ICustomerService, CustomerService>();
 
 
 // CORS
