@@ -9,7 +9,7 @@ namespace ProductService.Controllers;
 
 [ApiController]
 [Route("api/products")]
-public class ProductsController: ControllerBase
+public class ProductsController : ControllerBase
 {
     private readonly IProductService _productServices;
 
@@ -104,5 +104,68 @@ public class ProductsController: ControllerBase
                 message = "Delete Successfully"
             }
         );
+    }
+
+
+    // Extend
+    [Authorize]
+    [HttpGet("{id}/with-inventory")]
+    public async Task<IActionResult> GetProductWithInventory(int id)
+    {
+        var product = await _productServices.GetProductWithInventoryAsync(id);
+
+        if (product == null)
+        {
+            return NotFound(new { message = "Product not found" });
+        }
+
+        return Ok(product);
+    }
+
+
+    [Authorize]
+    [HttpGet("category/{categoryId}")]
+    public async Task<IActionResult> GetProductsByCategory(int categoryId)
+    {
+        var products = await _productServices.GetProductsByCategoryAsync(categoryId);
+        return Ok(products);
+    }
+
+
+    [Authorize]
+    [HttpGet("supplier/{supplierId}")]
+    public async Task<IActionResult> GetProductsBySupplier(int supplierId)
+    {
+        var products = await _productServices.GetProductsBySupplierAsync(supplierId);
+        return Ok(products);
+    }
+
+
+    [Authorize]
+    [HttpGet("search/{searchTerm}")]
+    public async Task<IActionResult> SearchProducts(string searchTerm)
+    {
+        var products = await _productServices.SearchProductsAsync(searchTerm);
+        return Ok(products);
+    }
+
+
+    [Authorize]
+    [HttpGet("low-stock")]
+    public async Task<IActionResult> GetLowStockProducts(
+        [FromQuery] int threshold = 10
+    )
+    {
+        var products = await _productServices.GetLowStockProductsAsync(threshold);
+        return Ok(products);
+    }
+
+
+    [Authorize]
+    [HttpGet("stats")]
+    public async Task<IActionResult> GetProductStats()
+    {
+        var stats = await _productServices.GetProductStatsAsync();
+        return Ok(stats);
     }
 }
