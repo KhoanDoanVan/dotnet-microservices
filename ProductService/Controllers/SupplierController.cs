@@ -78,7 +78,12 @@ public class SuppliersController : ControllerBase
             return NotFound(new { message = "Supplier not found" });
         }
 
-        return NoContent();
+        return Ok(
+            new
+            {
+                message = "Delete Successfully"
+            }
+        );
     }
 
 }

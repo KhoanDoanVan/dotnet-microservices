@@ -96,7 +96,12 @@ public class PromotionsController: ControllerBase
             return NotFound(new { message = "Promotion not found" });
         }
 
-        return NoContent();
+        return Ok(
+            new
+            {
+                message = "Delete Successfully"
+            }
+        );
     }
 
 

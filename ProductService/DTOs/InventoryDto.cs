@@ -15,7 +15,7 @@ public class UpdateInventoryRequest
     public int Quantity { get; set; }
 }
 
-
+// (add/remove)
 public class AdjustInventoryRequest
 {
     public int AdjustmentQuantity { get; set; }

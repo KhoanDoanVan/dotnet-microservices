@@ -5,7 +5,6 @@ using System.Text.Json;
 using OrderService.Data;
 using OrderService.Models;
 using OrderService.DTOs;
-using ProductService.DTOs;
 
 namespace OrderService.Services;
 

@@ -82,6 +82,11 @@ public class InventoryController: ControllerBase
             return NotFound(new { message = "Inventory not found" });
         }
 
-        return NoContent();
+        return Ok(
+            new
+            {
+                message = "Delete Successfully"
+            }
+        );
     }
 }

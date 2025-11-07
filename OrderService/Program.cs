@@ -5,6 +5,7 @@ using System.Text;
 using OrderService.Data;
 using OrderService.Services;
 using Microsoft.Extensions.Options;
+// using ProductService.Services;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -66,6 +67,7 @@ builder.Services.AddHttpClient("ProductService", client =>
 builder.Services.AddScoped<IOrderService, OrderService.Services.OrderService>();
 builder.Services.AddScoped<IPaymentService, PaymentService>();
 builder.Services.AddScoped<IPromotionService, PromotionService>();
+// builder.Services.AddScoped<IProductService, ProductService.Services.ProductService>();
 
 
 // CORS

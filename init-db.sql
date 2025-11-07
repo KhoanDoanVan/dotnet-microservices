@@ -21,7 +21,7 @@ CREATE TABLE IF NOT EXISTS customers (
     phone VARCHAR(20),
     email VARCHAR(100),
     address TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     total_spent DECIMAL(10, 2) DEFAULT 0,
     order_count INT DEFAULT 0,
     tier ENUM('bronze', 'silver', 'gold', 'platinum') DEFAULT 'bronze'
@@ -71,7 +71,7 @@ CREATE TABLE IF NOT EXISTS inventory (
     inventory_id INT AUTO_INCREMENT PRIMARY KEY,
     product_id INT NOT NULL,
     quantity INT DEFAULT 0,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIME ON UPDATE CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (product_id) REFERENCES products(product_id) ON DELETE CASCADE,
     UNIQUE KEY unique_product_inventory (product_id)
 );
