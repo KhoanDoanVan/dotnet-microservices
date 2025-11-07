@@ -27,6 +27,18 @@ public class OrderItemDto
 }
 
 
+public class OrderSummaryDto
+{
+    public int TotalOrders { get; set; }
+    public int PendingOrders { get; set; }
+    public int PaidOrders { get; set; }
+    public int CanceledOrders { get; set; }
+    public decimal TotalRevenue { get; set; }
+    public decimal TotalDiscounts { get; set; }
+    public decimal AverageOrderValue { get; set; }
+}
+
+
 public class CreateOrderRequest
 {
     public int? CustomerId { get; set; }
