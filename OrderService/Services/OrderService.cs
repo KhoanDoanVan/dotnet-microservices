@@ -15,6 +15,14 @@ public interface IOrderService
     Task<List<OrderDto>> GetAllOrdersAsync(int? userId, bool isAdmin);
     Task<OrderDto?> GetOrderByIdAsync(int id, int userId, bool isAdmin);
     Task<OrderDto> CreateOrderAsync(CreateOrderRequest request, int userId, string token);
+
+
+    // Extend
+    Task<List<OrderDto>> GetOrdersByStatusAsync(string status, int? userId, bool isAdmin);
+    Task<List<OrderDto>> GetOrdersByDateRangeAsync(DateTime startDate, DateTime endDate, int? userId, bool isAdmin);
+    Task<OrderDto?> CancelOrderAsync(int orderId, int userId, bool isAdmin);
+    Task<OrderSummaryDto> GetOrderSummaryAsync(int? userId, bool isAdmin);
+    Task<List<OrderDto>> GetRecentOrdersAsync(int count, int? userId, bool isAdmin);
 }
 
 
@@ -127,6 +135,123 @@ public class OrderService: IOrderService
             PropertyNameCaseInsensitive = true
         });
     }
+
+    // Extend
+    public async Task<List<OrderDto>> GetOrdersByStatusAsync(string status, int? userId, bool isAdmin)
+    {
+        var query = _context.Orders
+            .Include(o => o.OrderItems)
+            .Include(o => o.Payments)
+            .AsQueryable();
+
+        if (!isAdmin && userId.HasValue)
+        {
+            query = query.Where(o => o.UserId == userId.Value);
+        }
+
+        if (Enum.TryParse<OrderStatus>(status, true, out var orderStatus))
+        {
+            query = query.Where(o => o.Status == orderStatus);
+        }
+
+        var orders = await query.ToListAsync();
+        return orders.Select(MapToDto).ToList();
+    }
+
+
+    public async Task<List<OrderDto>> GetOrdersByDateRangeAsync(DateTime startDate, DateTime endDate, int? userId, bool isAdmin)
+    {
+        var query = _context.Orders
+            .Include(o => o.OrderItems)
+            .Include(o => o.Payments)
+            .Where(o => o.OrderDate >= startDate && o.OrderDate <= endDate)
+            .AsQueryable();
+
+        if (!isAdmin && userId.HasValue)
+        {
+            query = query.Where(o => o.UserId == userId.Value);
+        }
+
+        var orders = await query.ToListAsync();
+        return orders.Select(MapToDto).ToList();
+    }
+
+
+    public async Task<OrderDto?> CancelOrderAsync(int orderId, int userId, bool isAdmin)
+    {
+        var order = await _context.Orders
+            .Include(o => o.OrderItems)
+            .Include(o => o.Payments)
+            .FirstOrDefaultAsync(o => o.OrderId == orderId);
+
+        if (order == null)
+        {
+            return null;
+        }
+
+        if (!isAdmin && order.UserId != userId)
+        {
+            return null;
+        }
+
+        if (order.Status == OrderStatus.Paid)
+        {
+            throw new Exception("Cannot cancel a paid order");
+        }
+
+        order.Status = OrderStatus.Canceled;
+        await _context.SaveChangesAsync();
+
+        return MapToDto(order);
+    }
+
+
+    public async Task<OrderSummaryDto> GetOrderSummaryAsync(int? userId, bool isAdmin)
+    {
+        var query = _context.Orders.AsQueryable();
+
+        if (!isAdmin && userId.HasValue)
+        {
+            query = query.Where(o => o.UserId == userId.Value);
+        }
+
+        var totalOrders = await query.CountAsync();
+        var pendingOrders = await query.Where(o => o.Status == OrderStatus.Pending).CountAsync();
+        var paidOrders = await query.Where(o => o.Status == OrderStatus.Paid).CountAsync();
+        var canceledOrders = await query.Where(o => o.Status == OrderStatus.Canceled).CountAsync();
+        var totalRevenue = await query.Where(o => o.Status == OrderStatus.Paid).SumAsync(o => o.TotalAmount);
+        var totalDiscounts = await query.SumAsync(o => o.DiscountAmount);
+
+        return new OrderSummaryDto
+        {
+            TotalOrders = totalOrders,
+            PendingOrders = pendingOrders,
+            PaidOrders = paidOrders,
+            CanceledOrders = canceledOrders,
+            TotalRevenue = totalRevenue,
+            TotalDiscounts = totalDiscounts,
+            AverageOrderValue = totalOrders > 0 ? totalRevenue / paidOrders : 0
+        };
+    }
+
+
+    public async Task<List<OrderDto>> GetRecentOrdersAsync(int count, int? userId, bool isAdmin)
+    {
+        var query = _context.Orders
+            .Include(o => o.OrderItems)
+            .Include(o => o.Payments)
+            .OrderByDescending(o => o.OrderDate)
+            .AsQueryable();
+
+        if (!isAdmin && userId.HasValue)
+        {
+            query = query.Where(o => o.UserId == userId.Value);
+        }
+
+        var orders = await query.Take(count).ToListAsync();
+        return orders.Select(MapToDto).ToList();
+    }
+
 
 
     private OrderDto MapToDto(Order order)
