@@ -85,6 +85,11 @@ public class CustomersController: ControllerBase
             return NotFound(new { message = "Customer not found" });
         }
 
-        return NoContent();
+        return Ok(
+            new
+            {
+                message = "Delete Successfully"
+            }
+        );
     }
 }
