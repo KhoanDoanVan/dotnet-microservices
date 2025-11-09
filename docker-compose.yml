@@ -20,6 +20,29 @@ services:
       retries: 10
 
 
+
+  admin-ui:
+    build:
+      context: ./AdminUI
+      dockerfile: Dockerfile
+      args:
+        REACT_APP_API_URL: http://nginx-lb:80
+    container_name: admin-ui
+    ports:
+      - "3000:80"
+    depends_on:
+      - nginx
+    restart: unless-stopped
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+
   auth-service:
     build:
       context: ./AuthService
