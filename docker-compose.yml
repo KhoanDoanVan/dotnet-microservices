@@ -1,6 +1,25 @@
 version: '3.8'
 
 services:
+
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - app-network
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+
+
   mysql:
     image: mysql:8.0
     container_name: mysql
@@ -58,6 +77,8 @@ services:
     depends_on:
       mysql:
         condition: service_healthy
+      redis:
+        condition: service_healthy
     networks:
       - app-network
     deploy:
@@ -80,6 +101,8 @@ services:
     #   - "5002:80"
     depends_on:
       mysql:
+        condition: service_healthy
+      redis:
         condition: service_healthy
     networks:
       - app-network
@@ -104,6 +127,8 @@ services:
     #   - "5003:80"
     depends_on:
       mysql:
+        condition: service_healthy
+      redis:
         condition: service_healthy
     networks:
       - app-network
@@ -163,6 +188,7 @@ services:
 
 volumes:
   mysql_data:
+  redis_data:
 
 
 
