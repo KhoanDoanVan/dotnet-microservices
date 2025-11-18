@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ActionConstraints;
 using ProductService.DTOs;
 using ProductService.Services;
+using Shared.Services;
 
 namespace ProductService.Controllers;
 
@@ -12,10 +13,25 @@ namespace ProductService.Controllers;
 public class ProductsController : ControllerBase
 {
     private readonly IProductService _productServices;
+    // Extend services
+    private readonly IRedisCacheService _cache;
+    private readonly IElasticsearchService _elasticsearch;
+    private readonly IMessageBusService _messageBus;
+    private readonly IDistributedLockService _lockService;
 
-    public ProductsController(IProductService productService)
+    public ProductsController(
+        IProductService productService,
+        IRedisCacheService cache,
+        IElasticsearchService elasticsearch,
+        IMessageBusService messageBus,
+        IDistributedLockService lockService
+    )
     {
         _productServices = productService;
+        _cache = cache;
+        _elasticsearch = elasticsearch;
+        _messageBus = messageBus;
+        _lockService = lockService;
     }
 
 
@@ -23,7 +39,22 @@ public class ProductsController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> GetAllProducts()
     {
+
+        var cacheKey = "products:all";
+
+        // Try cache first
+        var cached = await _cache.GetAsync<List<ProductDto>>(cacheKey);
+        if (cached != null)
+        {
+            Response.Headers["X-Cache"] = "HIT";
+            return Ok(cached);
+        }
+        
+        // Cache miss
         var products = await _productServices.GetAllProductsAsync();
+        await _cache.SetAsync(cacheKey, products, TimeSpan.FromMinutes(5));
+
+        Response.Headers["X-Cache"] = "MISS";
         return Ok(products);
     }
 
@@ -32,6 +63,18 @@ public class ProductsController : ControllerBase
     [HttpGet("{id}")]
     public async Task<IActionResult> GetProductById(int id)
     {
+
+        var cacheKey = $"product:{id}";
+
+        var cached = await _cache.GetAsync<ProductDto>(cacheKey);
+        
+        if (cached != null)
+        {
+            Response.Headers["X-Cache"] = "HIT";
+            return Ok(cached);
+        }
+
+
         var product = await _productServices.GetProductByIdAsync(id);
 
         if (product == null)
@@ -44,6 +87,9 @@ public class ProductsController : ControllerBase
             );
         }
 
+        await _cache.SetAsync(cacheKey, product, TimeSpan.FromMinutes(10));
+        Response.Headers["X-Cache"] = "MISS";
+
         return Ok(product);
     }
 
@@ -54,7 +100,42 @@ public class ProductsController : ControllerBase
         [FromBody] CreateProductRequest request
     )
     {
+
+        // Use distributed lock to prevent race conditions
+        using var lockHandle = await _lockService.AcquireLockAsync( // the using holding the dispose for 30s
+            $"product:create:{request.Barcode}",
+            TimeSpan.FromSeconds(30)
+        );
+
+        if (lockHandle == null)
+        {
+            return Conflict(
+                new
+                {
+                    message = "Another operation is in progress"
+                }
+            );
+        }
+
         var product = await _productServices.CreateProductAsync(request);
+
+
+        // index to elasticsearch
+        await _elasticsearch.IndexProductAsync(new Models.Product
+        {
+            ProductId = product.ProductId,
+            ProductName = product.ProductName,
+            Barcode = product.Barcode,
+            CategoryId = product.CategoryId,
+            SupplierId = product.SupplierId,
+            Price = product.Price,
+            Unit = product.Unit,
+            CreatedAt = product.CreatedAt
+        });
+
+        // Invalidate cache
+        await _cache.RemoveAsync("products:all");
+
         return CreatedAtAction(nameof(GetProductById), new { id = product.ProductId }, product);
     }
 
@@ -78,6 +159,24 @@ public class ProductsController : ControllerBase
             );
         }
 
+        // Update elasticsearch
+        await _elasticsearch.IndexProductAsync(new Models.Product
+        {
+            ProductId = product.ProductId,
+            ProductName = product.ProductName,
+            Barcode = product.Barcode,
+            CategoryId = product.CategoryId,
+            SupplierId = product.SupplierId,
+            Price = product.Price,
+            Unit = product.Unit,
+            CreatedAt = product.CreatedAt
+        });
+
+        // Invalidate cache
+        await _cache.RemoveAsync($"product:{id}");
+        await _cache.RemoveAsync($"product:inventory:{id}");
+        await _cache.RemoveAsync($"products:all");
+
         return Ok(product);
     }
 
@@ -98,6 +197,13 @@ public class ProductsController : ControllerBase
             );
         }
 
+        // Remove elasticsearch
+        await _elasticsearch.DeleteProductAsync(id);
+
+        // Invalidate cache
+        await _cache.RemoveAsync($"product:{id}");
+        await _cache.RemoveAsync("products:all");
+
         return Ok(
             new
             {
@@ -112,12 +218,24 @@ public class ProductsController : ControllerBase
     [HttpGet("{id}/with-inventory")]
     public async Task<IActionResult> GetProductWithInventory(int id)
     {
+
+        var cacheKey = $"product:inventory:{id}";
+
+        var cached = await _cache.GetAsync<ProductWithInventoryDto>(cacheKey);
+
+        if(cached != null)
+        {
+            return Ok(cached);
+        }
+
         var product = await _productServices.GetProductWithInventoryAsync(id);
 
         if (product == null)
         {
             return NotFound(new { message = "Product not found" });
         }
+
+        await _cache.SetAsync(cacheKey, product, TimeSpan.FromMinutes(2));
 
         return Ok(product);
     }
@@ -145,8 +263,24 @@ public class ProductsController : ControllerBase
     [HttpGet("search/{searchTerm}")]
     public async Task<IActionResult> SearchProducts(string searchTerm)
     {
-        var products = await _productServices.SearchProductsAsync(searchTerm);
+        var products = await _elasticsearch.SearchProductsAsync(searchTerm); // elasticsearch for better search performance
         return Ok(products);
+    }
+
+    [Authorize]
+    [HttpGet("search-elastic/{query}")]
+    public async Task<IActionResult> SearchProductsElastic(string query)
+    {
+        var products = await _elasticsearch.SearchProductsAsync(query);
+        return Ok(products);
+    }
+
+    [Authorize]
+    [HttpGet("suggest/{query}")]
+    public async Task<IActionResult> SuggestProducts(string query)
+    {
+        var suggestions = await _elasticsearch.SuggestProductsAsync(query);
+        return Ok(suggestions);
     }
 
 
@@ -165,7 +299,20 @@ public class ProductsController : ControllerBase
     [HttpGet("stats")]
     public async Task<IActionResult> GetProductStats()
     {
+
+        var cacheKey = "products:stats";
+
+        var cached = await _cache.GetAsync<ProductStatsDto>(cacheKey);
+
+        if (cached != null)
+        {
+            return Ok(cached);
+        }
+
         var stats = await _productServices.GetProductStatsAsync();
+
+        await _cache.SetAsync(cacheKey, stats, TimeSpan.FromMinutes(5));
+
         return Ok(stats);
     }
 }
