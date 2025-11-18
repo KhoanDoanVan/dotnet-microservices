@@ -5,6 +5,9 @@ using System.Text;
 using ProductService.Data;
 using ProductService.Services;
 using Microsoft.Extensions.Options;
+using StackExchange.Redis;
+using Shared.Services;
+using Shared.Events;
 
 
 
@@ -25,6 +28,27 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 builder.Services.AddDbContext<ProductDbContext>(options => {
     options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString));
 });
+
+// Redis
+var redisConnection = builder.Configuration.GetConnectionString("Redis") ?? Environment.GetEnvironmentVariable("DefaultConnection") ?? "redis:6379";
+
+var redis = ConnectionMultiplexer.Connect(redisConnection);
+builder.Services.AddSingleton<IConnectionMultiplexer>(redis);
+builder.Services.AddSingleton<IRedisCacheService, RedisCacheService>();
+builder.Services.AddSingleton<IDistributedLockService, RedisDistributedLockService>();
+
+
+// RabbitMQ
+var rabbitMqConnection = builder.Configuration.GetConnectionString("RabbitMQ") ?? Environment.GetEnvironmentVariable("RABBITMQ_CONNECTION") ?? "amqp://admin:admin123@rabbitmq:5672";
+
+builder.Services.AddSingleton<IMessageBusService>(sp => new RabbitMQMessageBusService(rabbitMqConnection));
+
+
+// Elasticsearch
+var elasticsearchUrl = builder.Configuration.GetConnectionString("Elasticsearch") ?? Environment.GetEnvironmentVariable("ELASTICSEARCH_URL") ?? "http://elasticsearch:9200";
+
+builder.Services.AddSingleton<IElasticsearchService>(sp => new ElasticsearchService(elasticsearchUrl));
+
 
 
 // JWT Configuration
@@ -73,6 +97,10 @@ builder.Services.AddCors(options => {
 });
 
 
+// Health Checks
+
+
+
 var app = builder.Build();
 
 // Apply migrations
@@ -80,7 +108,30 @@ using (var scope = app.Services.CreateScope())
 {
     var dbContext = scope.ServiceProvider.GetRequiredService<ProductDbContext>();
     dbContext.Database.Migrate();
+
+
+    // Index existing products to Elasticsearch
+    var elasticsearchService = scope.ServiceProvider.GetRequiredService<IElasticsearchService>();
+    var products = await dbContext.Products.ToListAsync();
+    if (products.Any())
+    {
+        await elasticsearchService.BulkIndexProductsAsync(products);
+    }
 }
+
+
+
+// Subscribe to RabbitMQ Events
+var messageBus = app.Services.GetRequiredService<IMessageBusService>();
+await messageBus.SubscribeAsync<InventoryUpdatedEvent>(
+    queue: "product_inventory_updates",
+    exchange: "inventory",
+    routingKey: "inventory.updated",
+    handler: async (evt) =>
+    {
+        Console.WriteLine($"Inventory updated: Product {evt.ProductId}, New Quantity: {evt.NewQuantity}");
+    }
+);
 
 
 if (app.Environment.IsDevelopment())
