@@ -1,6 +1,5 @@
 using Elastic.Clients.Elasticsearch;
 using ProductService.Models;
-using ProductService.DTOs;
 
 
 namespace ProductService.Services;
@@ -50,7 +49,7 @@ public class ElasticsearchService: IElasticsearchService
                     .Keyword(k => k.Barcode)
                     .IntegerNumber(n => n.CategoryId)
                     .IntegerNumber(n => n.SupplierId)
-                    .FloatingPointNumber(f => f.Price)
+                    .FloatNumber(f => f.Price)
                     .Keyword(k => k.Unit)
             )));
         }
@@ -77,10 +76,10 @@ public class ElasticsearchService: IElasticsearchService
 
 
 
-    public async Task<List<ProductDto>> SearchProductAsync(string query, int from = 0, int size = 20)
+    public async Task<List<ProductDto>> SearchProductsAsync(string query, int from = 0, int size = 20)
     {
         var searchResponse = await _client.SearchAsync<ProductSearchDocument>(s => s
-            .Index(IndexName)
+            .Indices(IndexName)
             .From(from)
             .Size(size)
             .Query(q => q
@@ -118,6 +117,34 @@ public class ElasticsearchService: IElasticsearchService
             Unit = d.Unit,
             CreatedAt = d.CreatedAt
         }).ToList();
+    }
+
+
+    public async Task<List<ProductDto>> SuggestProductsAsync(string query, int size = 10)
+    {
+        var searchResponse = await _client.SearchAsync<ProductSearchDocument>(s => s
+            .Indices(IndexName)
+            .Size(size)
+            .Query(q => q
+                .Prefix(p => p
+                    .Field(f => f.ProductName)
+                    .Value(query)
+                )
+            )
+        );
+
+        return searchResponse.Documents.Select(d => new ProductDto
+        {
+            ProductId = d.ProductId,
+            ProductName = d.ProductName,
+            Barcode = d.Barcode,
+            CategoryId = d.CategoryId,
+            SupplierId = d.SupplierId,
+            Price = d.Price,
+            Unit = d.Unit,
+            CreateAt = d.CreatedAt
+        }        
+        ).ToList();
     }
 
 
