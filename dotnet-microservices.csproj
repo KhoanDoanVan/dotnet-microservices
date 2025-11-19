@@ -8,7 +8,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Shared/Middleware/DistributedTracingMiddleware.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Include="ProductService/ProductService.csproj" />
+    <None Include="Shared/Middleware/DistributedTracingMiddleware.cs" />
   </ItemGroup>
 
   <ItemGroup>
