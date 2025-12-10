@@ -17,6 +17,10 @@ EXPOSE 80
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
 
+COPY . .
+
+WORKDIR /src/AuthService
+
 # Copy file .csproj trước để cache bước restore
 COPY ["AuthService.csproj", "."]
 
