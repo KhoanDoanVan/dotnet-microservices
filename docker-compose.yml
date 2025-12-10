@@ -13,7 +13,7 @@ services:
       - app-network
     command: redis-server --appendonly yes
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: ["CMD-SHELL", "redis-cli ping || exit 1"]
       interval: 10s
       timeout: 3s
       retries: 5
@@ -33,7 +33,7 @@ services:
     networks:
       - app-network
     healthcheck:
-      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      test: ["CMD-SHELL", "rabbitmq-diagnostics ping || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -55,7 +55,7 @@ services:
     networks:
       - app-network
     healthcheck:
-      test: ["CMD-SHEEL", "curl -f http://localhost:9200/_cluster/heath || exit 1"]
+      test: ["CMD-SHELL", "curl -f http://localhost:9200/_cluster/health || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 5
@@ -162,7 +162,7 @@ services:
     # container_name: order-service
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
-      - ASPNETCORE_URLS=http://+80
+      - ASPNETCORE_URLS=http://+:80
     env_file:
       - ./OrderService/.env
     # ports:
