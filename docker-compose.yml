@@ -20,7 +20,7 @@ services:
 
 
   rabbitmq:
-    image: rabbitmq:3-management-alpine
+    image: rabbitmq:3-management
     container_name: rabbitmq
     environment:
       RABBITMQ_DEFAULT_USER: admin
@@ -106,8 +106,8 @@ services:
 
   auth-service:
     build:
-      context: ./AuthService
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: ./AuthService/Dockerfile
     # container_name: auth-service
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
@@ -131,8 +131,8 @@ services:
 
   product-service:
     build:
-      context: ./ProductService
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: ./ProductService/Dockerfile
     # container_name: product-service
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
@@ -157,8 +157,8 @@ services:
   
   order-service:
     build:
-      context: ./OrderService
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: ./OrderService/Dockerfile
     # container_name: order-service
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
@@ -183,8 +183,8 @@ services:
 
   api-gateway:
     build:
-      context: ./ApiGateway
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: ./ApiGateway/Dockerfile
     # container_name: api-gateway
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
