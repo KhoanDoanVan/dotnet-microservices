@@ -87,6 +87,9 @@ builder.Services.AddScoped<ISupplierService, SupplierService>();
 builder.Services.AddScoped<IInventoryService, InventoryService>();
 
 
+// Event handlers
+
+
 // CORS
 builder.Services.AddCors(options => {
     options.AddPolicy("AllowAll", policy => {

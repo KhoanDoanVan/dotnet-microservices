@@ -1,6 +1,6 @@
 using Elastic.Clients.Elasticsearch;
 using ProductService.Models;
-
+using ProductService.DTOs;
 
 namespace ProductService.Services;
 
@@ -142,7 +142,7 @@ public class ElasticsearchService: IElasticsearchService
             SupplierId = d.SupplierId,
             Price = d.Price,
             Unit = d.Unit,
-            CreateAt = d.CreatedAt
+            CreatedAt = d.CreatedAt
         }        
         ).ToList();
     }

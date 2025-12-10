@@ -114,7 +114,7 @@ public class OrderService: IOrderService
     }
 
 
-    private async Task<ProductDto?> GetProductFromServiceAsync(int productId, string token)
+    private async Task<ProductDtos?> GetProductFromServiceAsync(int productId, string token)
     {
         // Create a Client with idenity is "ProductService"
         var client = _httpClientFactory.CreateClient("ProductService"); // Define Configuration at Program.cs
@@ -129,7 +129,7 @@ public class OrderService: IOrderService
 
         var content = await response.Content.ReadAsStringAsync();
 
-        return JsonSerializer.Deserialize<ProductDto>(content, new JsonSerializerOptions
+        return JsonSerializer.Deserialize<ProductDtos>(content, new JsonSerializerOptions
         {
             PropertyNameCaseInsensitive = true
         });

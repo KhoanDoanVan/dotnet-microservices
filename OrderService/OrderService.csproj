@@ -15,9 +15,21 @@
     </PackageReference>
     <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="8.0.0" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
-
+    
+    <!-- Redis -->
+    <PackageReference Include="StackExchange.Redis" Version="2.7.10" />
+    
+    <!-- RabbitMQ -->
+    <PackageReference Include="RabbitMQ.Client" Version="6.8.1" />
+    
     <!-- Health Checks -->
     <PackageReference Include="AspNetCore.HealthChecks.MySql" Version="8.0.1" />
+    <PackageReference Include="AspNetCore.HealthChecks.Redis" Version="8.0.1" />
+    <PackageReference Include="AspNetCore.HealthChecks.Rabbitmq" Version="8.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Shared\Shared.csproj" />
   </ItemGroup>
 
 </Project>
